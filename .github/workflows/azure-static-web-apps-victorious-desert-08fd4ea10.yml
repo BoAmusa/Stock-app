@@ -38,5 +38,5 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "stock-app-vite"
-          output_location: "stock-app-vite/dist"
+          output_location: "dist"
           api_location: ""
