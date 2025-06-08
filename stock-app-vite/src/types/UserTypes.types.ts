@@ -1,3 +1,9 @@
+export type UserStockDocument = {
+  id: string;
+  userId: string;
+  stock: StockCardInfo;
+};
+
 export type StockCardInfo = {
   symbol: string;
   companyName: string;

@@ -1,4 +1,4 @@
-import type { StockCardInfo } from "./StockCard.types";
+import type { StockCardInfo } from "../../types/UserTypes.types";
 
 export type StockCardProps = {
   stockCardInfo: StockCardInfo;

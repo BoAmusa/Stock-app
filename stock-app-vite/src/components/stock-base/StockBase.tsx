@@ -1,8 +1,12 @@
 import * as React from "react";
 import { useState } from "react";
 import "../../App.css";
-import { getStockInfoFH } from "../../api/StockService.async";
-import type { StockCardInfo } from "../../components/stock-card/StockCard.types";
+import {
+  deleteUserStock,
+  getStockInfoFH,
+  saveUserStock,
+} from "../../api/StockService.async";
+import type { StockCardInfo } from "../../types/UserTypes.types";
 import {
   searchButtonStyle,
   searchInputStyle,
@@ -11,15 +15,37 @@ import {
 import StockCard from "../stock-card/StockCard";
 import { StockCardSave } from "../stock-card/StockCardSave";
 import { useNavigate } from "react-router-dom";
+import { useFetchUserStocksOnce } from "../../hooks/useFetchUserStocksOnce";
+import { useMsal } from "@azure/msal-react";
 
 const StockBase: React.FC = () => {
   const appName = import.meta.env.VITE_APP_NAME;
   const appDescription = import.meta.env.VITE_APP_DESCRIPTION;
   const [searchStock, setSearchStock] = useState("");
   const [stockInfo, setStockInfo] = useState<StockCardInfo | null>(null);
-  const [savedStocks, setSavedStocks] = useState<StockCardInfo[]>([]);
+  const { savedStocks, setSavedStocks, isLoading, error } =
+    useFetchUserStocksOnce();
   const [showError, setShowError] = useState(false);
   const navigate = useNavigate();
+  const { accounts } = useMsal();
+  const userEmail = accounts[0]?.username; // Get user email from MSAL account
+
+  // const fetcthUserStocks = async () => {
+  //   // This function can be used to fetch user-specific stocks if needed.
+  //   const { accounts } = useMsal();
+  //     const userEmail = accounts[0]?.username;
+  //     try {
+  //       const userStocks = await getUserStocks(userEmail);
+  //       if (userStocks && userStocks.length > 0) {
+  //         setSavedStocks(userStocks);
+  //          console.log("User stocks: ", userStocks);
+  //       } else {
+  //         console.log("No stocks found for the user.");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching user stocks: ", error);
+  //     }
+  //   }
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchStock(event.target.value);
@@ -29,7 +55,7 @@ const StockBase: React.FC = () => {
     if (searchStock) {
       // Check if the stock is already saved to avoid duplicate API calls
       const existingStock = savedStocks.find(
-        (stock) => stock.symbol.toLowerCase() === searchStock.toLowerCase()
+        (stock) => stock?.symbol?.toLowerCase() === searchStock.toLowerCase()
       );
 
       if (existingStock) {
@@ -66,21 +92,82 @@ const StockBase: React.FC = () => {
     }
   };
 
-  const handleSaveStock = () => {
+  const handleSaveStock = async () => {
     if (stockInfo) {
-      setSavedStocks((prev) => {
-        const alreadyExists = prev.some((s) => s.symbol === stockInfo.symbol);
-        const isAtLimit = prev.length >= 5;
+      if (!userEmail) {
+        console.error("User not logged in. Cannot save stock.");
+        // Consider displaying a user-friendly message, e.g., a toast notification
+        return;
+      }
 
-        if (alreadyExists || isAtLimit) return prev;
+      const alreadyExists = savedStocks.some(
+        (s) => s.symbol === stockInfo.symbol
+      );
+      const isAtLimit = savedStocks.length >= 5;
 
-        return [...prev, stockInfo];
-      });
+      if (alreadyExists) {
+        console.warn(
+          "Stock already exists in your saved list. Not saving again."
+        );
+        // Provide user feedback that stock is already saved
+        return;
+      }
+      if (isAtLimit) {
+        console.warn(
+          "You have reached the maximum limit of 5 saved stocks. Cannot add more."
+        );
+        // Provide user feedback about the limit
+        return;
+      }
+
+      try {
+        // Call the saveUserStock API function
+        const savedDoc = await saveUserStock(userEmail, stockInfo); // stockInfo directly maps to StockCardInfo
+        console.log("Stock successfully saved to Cosmos DB:", savedDoc);
+
+        // Update local state: add the newly saved stock from the backend response.
+        // Assuming `savedDoc` contains the full document returned by Cosmos DB,
+        // which includes the `id` you generate on the backend.
+        setSavedStocks((prev) => [...prev, savedDoc.data]); // Access the `data` property from the backend response
+      } catch (err) {
+        console.error("Error saving stock:", err);
+        // Display an error message to the user
+      }
     }
   };
 
-  const handleRemoveStock = (symbol: string) => {
-    setSavedStocks((prev) => prev.filter((stock) => stock.symbol !== symbol));
+  const handleRemoveStock = async (symbol: string) => {
+    if (!userEmail) {
+      console.error("User not logged in. Cannot remove stock.");
+      return;
+    }
+
+    // Find the full stock object to get its `id` if needed for deletion
+    // Your backend's DeleteUserStock expects `stockId` and `userId`.
+    // The `id` generated on POST is `${body.stock.symbol}-${Date.now()}`.
+    // So, if your `symbol` is actually the full `id`, use `symbol`.
+    // If your `symbol` is just like "MSFT" and the `id` is "MSFT-12345678",
+    // you need to pass the full `id` to the backend delete function.
+    // For now, assuming `symbol` IS the `stockId` or part of it, and your backend handles it.
+    // If not, you'd need to find the `id` from `savedStocks` first:
+    // const stockToDelete = savedStocks.find(s => s.symbol === symbol);
+    // if (!stockToDelete || !stockToDelete.id) {
+    //   console.error("Could not find stock to delete or its ID.");
+    //   return;
+    // }
+    // await deleteUserStock(userEmail, stockToDelete.id);
+
+    try {
+      // Call the deleteUserStock API function
+      await deleteUserStock(userEmail, symbol); // Assuming symbol acts as stockId for deletion
+      console.log(`Stock '${symbol}' successfully deleted from Cosmos DB.`);
+
+      // Update local state after successful backend deletion
+      setSavedStocks((prev) => prev.filter((stock) => stock.symbol !== symbol));
+    } catch (err) {
+      console.error(`Error deleting stock '${symbol}':`, err);
+      // Display an error message to the user
+    }
   };
 
   const handleSignOut = () => {

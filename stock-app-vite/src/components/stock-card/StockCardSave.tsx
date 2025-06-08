@@ -34,7 +34,7 @@ export const StockCardSave: React.FC<StockCardProps> = ({
       </p>
       <br />
       <button onClick={handleSaveStock} style={cardSaveButtonStyle}>
-        Save
+        Save Stock
       </button>
     </div>
   );

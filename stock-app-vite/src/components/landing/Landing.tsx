@@ -3,19 +3,9 @@ import { PublicClientApplication } from "@azure/msal-browser";
 import { MsalProvider, useMsal, useIsAuthenticated } from "@azure/msal-react";
 import { useNavigate } from "react-router-dom";
 import Welcome from "./Welcome";
+import { msalConfig } from "../../auth/MsalConfig";
 
-const clientId = import.meta.env.VITE_CLIENT_ID;
 const appName = import.meta.env.VITE_APP_NAME;
-
-// MSAL configuration for personal and microsoft accounts
-const msalConfig = {
-  auth: {
-    clientId: clientId,
-    authority: "https://login.microsoftonline.com/common",
-    redirectUri: `${window.location.origin}/landing`,
-  },
-};
-
 const msalInstance = new PublicClientApplication(msalConfig);
 
 const SignInButton: React.FC = () => {
