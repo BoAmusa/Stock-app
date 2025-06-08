@@ -13,8 +13,8 @@ import { StockCardSave } from "../stock-card/StockCardSave";
 import { useNavigate } from "react-router-dom";
 
 const StockBase: React.FC = () => {
-  const [title] = useState("Stock Watch App");
-  const [subtitle] = useState("Track the market one symbol at a time");
+  const appName = import.meta.env.VITE_APP_NAME;
+  const appDescription = import.meta.env.VITE_APP_DESCRIPTION;
   const [searchStock, setSearchStock] = useState("");
   const [stockInfo, setStockInfo] = useState<StockCardInfo | null>(null);
   const [savedStocks, setSavedStocks] = useState<StockCardInfo[]>([]);
@@ -120,8 +120,8 @@ const StockBase: React.FC = () => {
             marginBottom: "40px",
           }}
         >
-          <h1>{title}</h1>
-          <h2>{subtitle}</h2>
+          <h1>{appName}</h1>
+          <h2>{appDescription}</h2>
 
           <div
             style={{

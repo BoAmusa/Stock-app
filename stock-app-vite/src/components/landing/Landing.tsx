@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Welcome from "./Welcome";
 
 const clientId = import.meta.env.VITE_CLIENT_ID;
+const appName = import.meta.env.VITE_APP_NAME;
 
 // MSAL configuration for personal and microsoft accounts
 const msalConfig = {
@@ -49,7 +50,7 @@ const LandingContent: React.FC = () => {
         marginTop: 100,
       }}
     >
-      <h1>Stock App</h1>
+      <h1>{appName}</h1>
       {!isAuthenticated && <p>Sign in to continue</p>}
       {isAuthenticated ? <Welcome route="/stockbase" /> : <SignInButton />}
     </div>
