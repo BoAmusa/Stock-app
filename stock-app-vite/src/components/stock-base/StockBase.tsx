@@ -3,6 +3,7 @@ import { useState } from "react";
 import "../../App.css";
 import { getStockInfoFH } from "../../api/StockService.async";
 import type { StockCardInfo } from "../../components/stock-card/StockCard.types";
+import { cardStyle } from "../../util/styles/Styles";
 
 const StockBase: React.FC = () => {
   const [title] = useState("Stock App");
@@ -41,104 +42,119 @@ const StockBase: React.FC = () => {
   };
 
   return (
-    <>
-      <h1>{title}</h1>
-      <h2>{subtitle}</h2>
-
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        minHeight: "100vh",
+        justifyContent: "flex-start",
+        paddingTop: "40px",
+      }}
+    >
       <div
-        style={{ position: "relative", width: "250px", marginBottom: "20px" }}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          marginBottom: "40px",
+        }}
       >
-        <input
-          type="text"
-          placeholder="Search for a stock..."
-          value={searchStock}
-          onChange={handleSearchChange}
-          style={{
-            width: "100%",
-            padding: "8px 40px 8px 8px",
-            fontSize: "16px",
-            boxSizing: "border-box",
-          }}
-        />
-        <button
-          onClick={handleSearchClick}
-          style={{
-            position: "absolute",
-            right: "8px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            background: "none",
-            border: "none",
-            padding: 0,
-            cursor: "pointer",
-            height: "24px",
-            width: "24px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          aria-label="Search"
-        >
-          <svg
-            width="18"
-            height="18"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <line x1="16.65" y1="16.65" x2="21" y2="21" />
-          </svg>
-        </button>
-      </div>
+        <h1>{title}</h1>
+        <h2>{subtitle}</h2>
 
-      {stockInfo ? (
         <div
           style={{
-            border: "1px solid #ddd",
-            padding: "16px",
-            borderRadius: "8px",
-            maxWidth: "300px",
+            position: "relative",
+            width: "250px",
+            marginBottom: "20px",
           }}
         >
-          <img
-            src={stockInfo.logo}
-            alt={`${stockInfo.symbol} logo`}
-            style={{ height: "40px", marginBottom: "8px" }}
-          />
-          <h3>
-            {stockInfo.companyName} ({stockInfo.symbol})
-          </h3>
-          <p>
-            Price: ${stockInfo.price.toFixed(2)} {stockInfo.currency}
-          </p>
-          <p>
-            Change: {stockInfo.change > 0 ? "+" : ""}
-            {stockInfo.change.toFixed(2)} ({stockInfo.percentChange.toFixed(2)}
-            %)
-          </p>
-          <button
-            onClick={handleSaveStock}
+          <input
+            type="text"
+            placeholder="Search for a stock..."
+            value={searchStock}
+            onChange={handleSearchChange}
             style={{
-              marginTop: "10px",
-              padding: "6px 12px",
-              fontSize: "14px",
-              cursor: "pointer",
+              width: "100%",
+              padding: "8px 40px 8px 8px",
+              fontSize: "16px",
+              boxSizing: "border-box",
             }}
+          />
+          <button
+            onClick={handleSearchClick}
+            style={{
+              position: "absolute",
+              right: "8px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "none",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+              height: "24px",
+              width: "24px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            aria-label="Search"
           >
-            Save
+            <svg
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <line x1="16.65" y1="16.65" x2="21" y2="21" />
+            </svg>
           </button>
         </div>
-      ) : searchStock !== "" ? (
-        <div>
-          <h3>No stock info available</h3>
-        </div>
-      ) : null}
+
+        {stockInfo ? (
+          <div style={cardStyle}>
+            <img
+              src={stockInfo.logo}
+              alt={`${stockInfo.symbol} logo`}
+              style={{ height: "40px", marginBottom: "8px" }}
+            />
+            <h3>
+              {stockInfo.companyName} ({stockInfo.symbol})
+            </h3>
+            <p>
+              Price: ${stockInfo.price.toFixed(2)} {stockInfo.currency}
+            </p>
+            <p>
+              Change: {stockInfo.change > 0 ? "+" : ""}
+              {stockInfo.change.toFixed(2)} (
+              {stockInfo.percentChange.toFixed(2)}%)
+            </p>
+            <button
+              onClick={handleSaveStock}
+              style={{
+                marginTop: "10px",
+                padding: "6px 12px",
+                fontSize: "14px",
+                cursor: "pointer",
+              }}
+            >
+              Save
+            </button>
+          </div>
+        ) : searchStock !== "" ? (
+          <div>
+            <h3>No stock info available</h3>
+          </div>
+        ) : null}
+      </div>
 
       {savedStocks.length > 0 && (
-        <div style={{ marginTop: "40px" }}>
-          <h2>Saved Stocks</h2>
+        <div style={{ width: "100%", padding: "0 20px" }}>
+          <h2 style={{ textAlign: "center" }}>Saved Stocks</h2>
           <div
             style={{
               display: "flex",
@@ -149,19 +165,7 @@ const StockBase: React.FC = () => {
             }}
           >
             {savedStocks.map((stock, index) => (
-              <div
-                key={index}
-                style={{
-                  border: "1px solid #ccc",
-                  padding: "10px",
-                  marginBottom: "10px",
-                  borderRadius: "8px",
-                  width: "250px",
-                  minWidth: "250px",
-                  flex: "0 0 auto",
-                  background: "#fff",
-                }}
-              >
+              <div key={index} style={cardStyle}>
                 <img
                   src={stock.logo}
                   alt={`${stock.symbol} logo`}
@@ -182,7 +186,7 @@ const StockBase: React.FC = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

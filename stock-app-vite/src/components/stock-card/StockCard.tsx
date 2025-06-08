@@ -1,5 +1,7 @@
 import React from "react";
 import type { StockCardProps } from "./StockCard.props";
+import "../../App.css";
+import { cardStyle } from "../../util/styles/Styles";
 
 const StockCard: React.FC<StockCardProps> = ({ stockCardInfo }) => {
   const { companyName, symbol, price, change, percentChange, logo, currency } =
@@ -7,61 +9,24 @@ const StockCard: React.FC<StockCardProps> = ({ stockCardInfo }) => {
   const priceChangeColor = change > 0 ? "green" : change < 0 ? "red" : "gray";
 
   return (
-    <div
-      style={{
-        border: "1px solid #ccc",
-        borderRadius: 8,
-        padding: 16,
-        maxWidth: 320,
-        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      {logo ? (
+    <div style={cardStyle}>
+      {logo && (
         <img
           src={logo}
-          alt={`${companyName} logo`}
-          style={{ width: 64, height: 64, objectFit: "contain" }}
+          alt={`${symbol} logo`}
+          style={{ height: "40px", marginBottom: "8px" }}
         />
-      ) : (
-        <div
-          style={{
-            width: 64,
-            height: 64,
-            backgroundColor: "#eee",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 24,
-            color: "#999",
-            borderRadius: 8,
-          }}
-        >
-          ?
-        </div>
       )}
-
-      <div style={{ flex: 1 }}>
-        <h2 style={{ margin: 0, fontSize: "1.2rem" }}>
-          {companyName} ({symbol})
-        </h2>
-        <p style={{ margin: "4px 0", fontWeight: "bold", fontSize: "1.1rem" }}>
-          {currency} {price.toFixed(2)}
-        </p>
-        <p
-          style={{
-            margin: 0,
-            color: priceChangeColor,
-            fontWeight: "bold",
-          }}
-        >
-          {change >= 0 ? "+" : ""}
-          {change.toFixed(2)} ({percentChange.toFixed(2)}%)
-        </p>
-      </div>
+      <h3 style={{ margin: "8px 0" }}>
+        {companyName} ({symbol})
+      </h3>
+      <p style={{ margin: "4px 0", fontWeight: "bold" }}>
+        Price: ${price.toFixed(2)} {currency}
+      </p>
+      <p style={{ margin: 0, color: priceChangeColor }}>
+        Change: {change >= 0 ? "+" : ""}
+        {change.toFixed(2)} ({percentChange.toFixed(2)}%)
+      </p>
     </div>
   );
 };

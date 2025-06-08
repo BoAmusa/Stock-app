@@ -1,6 +1,7 @@
 import React from "react";
 import { PublicClientApplication } from "@azure/msal-browser";
 import { MsalProvider, useMsal, useIsAuthenticated } from "@azure/msal-react";
+import { useNavigate } from "react-router-dom";
 
 const clientId = import.meta.env.VITE_CLIENT_ID;
 
@@ -9,7 +10,7 @@ const msalConfig = {
   auth: {
     clientId: clientId,
     authority: "https://login.microsoftonline.com/common",
-    redirectUri: window.location.origin,
+    redirectUri: `${window.location.origin}/landing`,
   },
 };
 
@@ -17,21 +18,22 @@ const msalInstance = new PublicClientApplication(msalConfig);
 
 const SignInButton: React.FC = () => {
   const { instance } = useMsal();
+  const navigate = useNavigate();
 
-  const handleLogin = () => {
-    instance.loginPopup().catch((e) => {
+  const handleLogin = async () => {
+    try {
+      await instance.loginPopup({
+        scopes: ["User.Read"],
+      });
+
+      // After successful login, navigate to the stock base page
+      navigate("/stockbase");
+    } catch (e) {
       console.error(e);
-    });
+    }
   };
 
-  return (
-    <button
-      onClick={handleLogin}
-      style={{ padding: "10px 20px", fontSize: "16px" }}
-    >
-      Sign in with Microsoft
-    </button>
-  );
+  return <button onClick={handleLogin}>Sign In</button>;
 };
 
 const Welcome: React.FC = () => {
