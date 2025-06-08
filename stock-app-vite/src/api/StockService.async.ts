@@ -1,10 +1,12 @@
+
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 /**
  * Function to fetch the stock price of a given company.
  * @param company 
  * @returns 
  */
 export const getStockPrice = async (company: string): Promise<number> => {
-  const response = await fetch(`/api/GetStockPrice?symbol=${encodeURIComponent(company)}`);
+  const response = await fetch(`${API_BASE}/StockPrice?symbol=${encodeURIComponent(company)}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch stock price");
@@ -20,7 +22,7 @@ export const getStockPrice = async (company: string): Promise<number> => {
 }
 
 export const getStockInfoIEX = async (company: string): Promise<any> => {
-  const response = await fetch(`/api/GetStockInfo?symbol=${encodeURIComponent(company)}`);
+  const response = await fetch(`${API_BASE}/StockInfo?symbol=${encodeURIComponent(company)}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch stock info");
@@ -36,7 +38,7 @@ export const getStockInfoIEX = async (company: string): Promise<any> => {
 }
 
 export async function getStockInfoFH(symbol: string) {
-  const response = await fetch(`/api/GetStockInfoFH?symbol=${encodeURIComponent(symbol)}`);
+  const response = await fetch(`${API_BASE}/StockInfoFH?symbol=${encodeURIComponent(symbol)}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch stock info");
