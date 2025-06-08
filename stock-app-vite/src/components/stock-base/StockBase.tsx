@@ -28,24 +28,7 @@ const StockBase: React.FC = () => {
   const [showError, setShowError] = useState(false);
   const navigate = useNavigate();
   const { accounts } = useMsal();
-  const userEmail = accounts[0]?.username; // Get user email from MSAL account
-
-  // const fetcthUserStocks = async () => {
-  //   // This function can be used to fetch user-specific stocks if needed.
-  //   const { accounts } = useMsal();
-  //     const userEmail = accounts[0]?.username;
-  //     try {
-  //       const userStocks = await getUserStocks(userEmail);
-  //       if (userStocks && userStocks.length > 0) {
-  //         setSavedStocks(userStocks);
-  //          console.log("User stocks: ", userStocks);
-  //       } else {
-  //         console.log("No stocks found for the user.");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching user stocks: ", error);
-  //     }
-  //   }
+  const userEmail = accounts[0]?.username;
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchStock(event.target.value);
@@ -53,7 +36,6 @@ const StockBase: React.FC = () => {
 
   const handleSearchClick = () => {
     if (searchStock) {
-      // Check if the stock is already saved to avoid duplicate API calls
       const existingStock = savedStocks.find(
         (stock) => stock?.symbol?.toLowerCase() === searchStock.toLowerCase()
       );
@@ -61,7 +43,6 @@ const StockBase: React.FC = () => {
       if (existingStock) {
         setStockInfo(existingStock);
         setShowError(false);
-        console.log("Stock already saved, using existing data.");
         return;
       }
 
@@ -95,8 +76,7 @@ const StockBase: React.FC = () => {
   const handleSaveStock = async () => {
     if (stockInfo) {
       if (!userEmail) {
-        console.error("User not logged in. Cannot save stock.");
-        // Consider displaying a user-friendly message, e.g., a toast notification
+        console.error("User not logged in.");
         return;
       }
 
@@ -105,73 +85,33 @@ const StockBase: React.FC = () => {
       );
       const isAtLimit = savedStocks.length >= 5;
 
-      if (alreadyExists) {
-        console.warn(
-          "Stock already exists in your saved list. Not saving again."
-        );
-        // Provide user feedback that stock is already saved
-        return;
-      }
-      if (isAtLimit) {
-        console.warn(
-          "You have reached the maximum limit of 5 saved stocks. Cannot add more."
-        );
-        // Provide user feedback about the limit
-        return;
-      }
+      if (alreadyExists || isAtLimit) return;
 
       try {
-        // Call the saveUserStock API function
-        const savedDoc = await saveUserStock(userEmail, stockInfo); // stockInfo directly maps to StockCardInfo
-        console.log("Stock successfully saved to Cosmos DB:", savedDoc);
-
-        // Update local state: add the newly saved stock from the backend response.
-        // Assuming `savedDoc` contains the full document returned by Cosmos DB,
-        // which includes the `id` you generate on the backend.
-        setSavedStocks((prev) => [...prev, savedDoc.data]); // Access the `data` property from the backend response
+        const savedDoc = await saveUserStock(userEmail, stockInfo);
+        setSavedStocks((prev) => [...prev, savedDoc.data]);
       } catch (err) {
         console.error("Error saving stock:", err);
-        // Display an error message to the user
       }
     }
   };
 
   const handleRemoveStock = async (symbol: string) => {
     if (!userEmail) {
-      console.error("User not logged in. Cannot remove stock.");
+      console.error("User not logged in.");
       return;
     }
 
-    // Find the full stock object to get its `id` if needed for deletion
-    // Your backend's DeleteUserStock expects `stockId` and `userId`.
-    // The `id` generated on POST is `${body.stock.symbol}-${Date.now()}`.
-    // So, if your `symbol` is actually the full `id`, use `symbol`.
-    // If your `symbol` is just like "MSFT" and the `id` is "MSFT-12345678",
-    // you need to pass the full `id` to the backend delete function.
-    // For now, assuming `symbol` IS the `stockId` or part of it, and your backend handles it.
-    // If not, you'd need to find the `id` from `savedStocks` first:
-    // const stockToDelete = savedStocks.find(s => s.symbol === symbol);
-    // if (!stockToDelete || !stockToDelete.id) {
-    //   console.error("Could not find stock to delete or its ID.");
-    //   return;
-    // }
-    // await deleteUserStock(userEmail, stockToDelete.id);
-
     try {
-      // Call the deleteUserStock API function
-      await deleteUserStock(userEmail, symbol); // Assuming symbol acts as stockId for deletion
-      console.log(`Stock '${symbol}' successfully deleted from Cosmos DB.`);
-
-      // Update local state after successful backend deletion
+      await deleteUserStock(userEmail, symbol);
       setSavedStocks((prev) => prev.filter((stock) => stock.symbol !== symbol));
     } catch (err) {
       console.error(`Error deleting stock '${symbol}':`, err);
-      // Display an error message to the user
     }
   };
 
   const handleSignOut = () => {
-    navigate("/"); // redirect to landing page
+    navigate("/");
   };
 
   return (
@@ -188,6 +128,7 @@ const StockBase: React.FC = () => {
           Sign Out
         </button>
       </div>
+
       <div
         style={{
           display: "flex",
@@ -232,7 +173,7 @@ const StockBase: React.FC = () => {
               aria-label="Search for stock"
             >
               <svg
-                width="20" // slightly larger
+                width="20"
                 height="20"
                 fill="none"
                 stroke="currentColor"
@@ -265,7 +206,14 @@ const StockBase: React.FC = () => {
           )}
         </div>
 
-        {savedStocks.length > 0 && (
+        {/* Conditional rendering with loading, error, stocks */}
+        {isLoading ? (
+          <div className="spinner" />
+        ) : error ? (
+          <div style={{ color: "red", textAlign: "center", marginTop: "1rem" }}>
+            Failed to load saved stocks. Please try again later.
+          </div>
+        ) : savedStocks.length > 0 ? (
           <div style={{ width: "100%", padding: "0 20px" }}>
             <h2 style={{ textAlign: "center" }}>Saved Stocks</h2>
             <p>Save up to 5 maximum</p>
@@ -289,6 +237,10 @@ const StockBase: React.FC = () => {
               ))}
             </div>
           </div>
+        ) : (
+          <p style={{ textAlign: "center" }}>
+            You have no saved stocks yet. Search and save some!
+          </p>
         )}
       </div>
     </>
