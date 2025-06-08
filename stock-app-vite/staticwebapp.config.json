@@ -2,11 +2,20 @@
   "routes": [
     {
       "route": "/",
-      "allowedRoles": ["anonymous"]
+      "redirect": "/landing",
+      "statusCode": 302
     },
     {
-      "route": "/*",
-      "allowedRoles": ["authenticated"]
+      "route": "/landing",
+      "allowedRoles": [
+        "anonymous"
+      ]
+    },
+    {
+      "route": "/stockbase",
+      "allowedRoles": [
+        "authenticated"
+      ]
     }
   ],
   "auth": {
@@ -17,7 +26,9 @@
           "clientIdSettingName": "VITE_CLIENT_ID"
         },
         "login": {
-          "loginParameters": ["scope=openid profile email"]
+          "loginParameters": [
+            "scope=openid profile email"
+          ]
         }
       }
     }
@@ -28,6 +39,8 @@
   },
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/api/*"]
+    "exclude": [
+      "/api/*"
+    ]
   }
 }
