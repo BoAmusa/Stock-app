@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import "./App.css";
+import "../..App.css";
 import { getStockInfoFH } from "../../api/StockService.async";
 import type { StockCardInfo } from "../../components/stock-card/StockCard.types";
 
