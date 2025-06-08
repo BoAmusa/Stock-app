@@ -1,15 +1,43 @@
-import React from "react";
+import React, { useState } from "react";
 import type { StockCardProps } from "./StockCard.props";
 import "../../App.css";
-import { cardStyle } from "../../util/styles/Styles";
+import {
+  removeButtonCardStyle,
+  removeButtonStyle,
+} from "../../util/styles/Styles";
 
-const StockCard: React.FC<StockCardProps> = ({ stockCardInfo }) => {
+export const StockCard: React.FC<StockCardProps> = ({
+  stockCardInfo,
+  handleRemoveStock,
+}) => {
   const { companyName, symbol, price, change, percentChange, logo, currency } =
     stockCardInfo;
   const priceChangeColor = change > 0 ? "green" : change < 0 ? "red" : "gray";
+  const [hover, setHover] = useState(false);
 
   return (
-    <div style={cardStyle}>
+    <div style={removeButtonCardStyle}>
+      <button
+        onClick={() => handleRemoveStock?.(symbol)}
+        style={removeButtonStyle}
+        aria-label="Remove stock"
+        title="Remove stock"
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          fill="none"
+          stroke={hover ? "#f00" : "#888"}
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
       {logo && (
         <img
           src={logo}
@@ -24,7 +52,7 @@ const StockCard: React.FC<StockCardProps> = ({ stockCardInfo }) => {
         Price: ${price.toFixed(2)} {currency}
       </p>
       <p style={{ margin: 0, color: priceChangeColor }}>
-        Change: {change >= 0 ? "+" : ""}
+        1-Day Change: {change >= 0 ? "+" : ""}
         {change.toFixed(2)} ({percentChange.toFixed(2)}%)
       </p>
     </div>

@@ -2,10 +2,11 @@ import React from "react";
 import { PublicClientApplication } from "@azure/msal-browser";
 import { MsalProvider, useMsal, useIsAuthenticated } from "@azure/msal-react";
 import { useNavigate } from "react-router-dom";
+import Welcome from "./Welcome";
 
 const clientId = import.meta.env.VITE_CLIENT_ID;
 
-// MSAL configuration
+// MSAL configuration for personal and microsoft accounts
 const msalConfig = {
   auth: {
     clientId: clientId,
@@ -36,15 +37,6 @@ const SignInButton: React.FC = () => {
   return <button onClick={handleLogin}>Sign In</button>;
 };
 
-const Welcome: React.FC = () => {
-  const { accounts } = useMsal();
-  return (
-    <div>
-      <h2>Welcome, {accounts[0]?.name || "User"}!</h2>
-    </div>
-  );
-};
-
 const LandingContent: React.FC = () => {
   const isAuthenticated = useIsAuthenticated();
 
@@ -58,8 +50,8 @@ const LandingContent: React.FC = () => {
       }}
     >
       <h1>Stock App</h1>
-      <p>Sign in to continue</p>
-      {isAuthenticated ? <Welcome /> : <SignInButton />}
+      {!isAuthenticated && <p>Sign in to continue</p>}
+      {isAuthenticated ? <Welcome route="/stockbase" /> : <SignInButton />}
     </div>
   );
 };
