@@ -1,3 +1,5 @@
+import { PublicClientApplication } from "@azure/msal-browser";
+
 const clientId = import.meta.env.VITE_CLIENT_ID;
 
 // MSAL configuration for personal and microsoft accounts
@@ -8,3 +10,5 @@ export const msalConfig = {
     redirectUri: `${window.location.origin}/landing`,
   },
 };
+
+export const msalInstance = new PublicClientApplication(msalConfig);

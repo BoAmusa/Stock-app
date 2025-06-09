@@ -1,3 +1,4 @@
+import { getAccessToken } from "../auth/AuthUtil";
 import type { StockCardInfo } from "../types/UserTypes.types";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "/api";
@@ -8,8 +9,19 @@ const API_BASE = import.meta.env.VITE_API_BASE || "/api";
  * @throws Error if the API call fails or if the response is not ok.
  */
 export const getStockPrice = async (company: string): Promise<number> => {
+  const token = await getAccessToken();
+
+  if (!token) {
+    throw new Error("No access token available. User must be signed in.");
+  }
+
   const response = await fetch(
-    `${API_BASE}/StockPrice?symbol=${encodeURIComponent(company)}`
+    `${API_BASE}/StockPrice?symbol=${encodeURIComponent(company)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
   );
 
   if (!response.ok) {
@@ -32,8 +44,19 @@ export const getStockPrice = async (company: string): Promise<number> => {
  * @throws Error if the API call fails or if the response is not ok.
  */
 export const getStockInfoIEX = async (company: string): Promise<any> => {
+  const token = await getAccessToken();
+
+  if (!token) {
+    throw new Error("No access token available. User must be signed in.");
+  }
+
   const response = await fetch(
-    `${API_BASE}/StockInfo?symbol=${encodeURIComponent(company)}`
+    `${API_BASE}/StockInfo?symbol=${encodeURIComponent(company)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
   );
 
   if (!response.ok) {
@@ -56,8 +79,19 @@ export const getStockInfoIEX = async (company: string): Promise<any> => {
  * @throws Error if the API call fails or if the response is not ok.
  */
 export async function getStockInfoFH(symbol: string) {
+  const token = await getAccessToken();
+
+  if (!token) {
+    throw new Error("No access token available. User must be signed in.");
+  }
+
   const response = await fetch(
-    `${API_BASE}/StockInfoFH?symbol=${encodeURIComponent(symbol)}`
+    `${API_BASE}/StockInfoFH?symbol=${encodeURIComponent(symbol)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
   );
 
   if (!response.ok) {
@@ -68,17 +102,26 @@ export async function getStockInfoFH(symbol: string) {
 }
 
 export async function deleteUserStock(userId: string, symbol: string) {
+  const token = await getAccessToken();
+
+  if (!token) {
+    throw new Error("No access token available. User must be signed in.");
+  }
+
   // Ensure both userId and symbol are provided
   if (!userId || !symbol) {
     throw new Error("Both userId and symbol are required to delete a stock.");
   }
 
   const response = await fetch(
-    `${API_BASE}/UserStock?userId=${encodeURIComponent(
+    `${API_BASE}/DeleteUserStock?userId=${encodeURIComponent(
       userId
-    )}&stockId=${encodeURIComponent(symbol)}`,
+    )}&stockSymbol=${encodeURIComponent(symbol)}`,
     {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }
   );
 
@@ -101,13 +144,24 @@ export async function deleteUserStock(userId: string, symbol: string) {
  * @throws Error if userId is not provided or if the API call fails.
  */
 export async function getUserStocks(userId: string) {
+  const token = await getAccessToken();
+
+  if (!token) {
+    throw new Error("No access token available. User must be signed in.");
+  }
+
   // Ensure userId is provided
   if (!userId) {
     throw new Error("userId is required to fetch user stocks.");
   }
 
   const response = await fetch(
-    `${API_BASE}/UserStocks?userId=${encodeURIComponent(userId)}`
+    `${API_BASE}/UserStocks?userId=${encodeURIComponent(userId)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
   );
 
   if (!response.ok) {
@@ -129,6 +183,12 @@ export async function getUserStocks(userId: string) {
  * @throws Error if userId or stock is not provided, or if the API call fails.
  */
 export async function saveUserStock(userId: string, stock: StockCardInfo) {
+  const token = await getAccessToken();
+
+  if (!token) {
+    throw new Error("No access token available. User must be signed in.");
+  }
+
   // Ensure userId and stock are provided
   if (!userId || !stock) {
     throw new Error("Both userId and stock are required to save a user stock.");
@@ -138,6 +198,7 @@ export async function saveUserStock(userId: string, stock: StockCardInfo) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       userId,

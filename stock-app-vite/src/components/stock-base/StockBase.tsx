@@ -6,7 +6,10 @@ import {
   getStockInfoFH,
   saveUserStock,
 } from "../../api/StockService.async";
-import type { StockCardInfo } from "../../types/UserTypes.types";
+import type {
+  StockCardInfo,
+  UserStockDocument,
+} from "../../types/UserTypes.types";
 import {
   searchButtonStyle,
   searchInputStyle,
@@ -15,8 +18,10 @@ import {
 import StockCard from "../stock-card/StockCard";
 import { StockCardSave } from "../stock-card/StockCardSave";
 import { useNavigate } from "react-router-dom";
-import { useFetchUserStocksOnce } from "../../hooks/useFetchUserStocksOnce";
+import { useFetchUserStocks } from "../../hooks/useFetchUserStocks";
 import { useMsal } from "@azure/msal-react";
+import { mergeStockCardsFromUserDocs } from "../../util/styles/Helper";
+import { toast } from "react-toastify";
 
 const StockBase: React.FC = () => {
   const appName = import.meta.env.VITE_APP_NAME;
@@ -24,7 +29,7 @@ const StockBase: React.FC = () => {
   const [searchStock, setSearchStock] = useState("");
   const [stockInfo, setStockInfo] = useState<StockCardInfo | null>(null);
   const { savedStocks, setSavedStocks, isLoading, error } =
-    useFetchUserStocksOnce();
+    useFetchUserStocks();
   const [showError, setShowError] = useState(false);
   const navigate = useNavigate();
   const { accounts } = useMsal();
@@ -56,8 +61,7 @@ const StockBase: React.FC = () => {
             setShowError(true);
           }
         })
-        .catch((error) => {
-          console.error("Error fetching stock info:", error);
+        .catch((_error) => {
           setStockInfo(null);
           setShowError(true);
         });
@@ -84,14 +88,35 @@ const StockBase: React.FC = () => {
         (s) => s.symbol === stockInfo.symbol
       );
       const isAtLimit = savedStocks.length >= 5;
-
-      if (alreadyExists || isAtLimit) return;
+      // Check if the user has reached the limit of saved stocks
+      if (isAtLimit && alreadyExists) {
+        toast.info("Sorry you can only save up to 5 stocks.");
+        return;
+      } else if (alreadyExists) {
+        toast.info("Stock already exists in your saved list.");
+        return;
+      } else if (isAtLimit) {
+        toast.error("You can only save up to 5 stocks.");
+        return;
+      }
 
       try {
         const savedDoc = await saveUserStock(userEmail, stockInfo);
-        setSavedStocks((prev) => [...prev, savedDoc.data]);
+        const userStockDoc = savedDoc?.data as UserStockDocument;
+
+        if (!userStockDoc?.stock) {
+          console.error("Invalid stock document received");
+          return;
+        }
+
+        // Merge the new stock with existing stocks
+        const extractedStocks = mergeStockCardsFromUserDocs(savedStocks, [
+          userStockDoc,
+        ]);
+        setSavedStocks(extractedStocks);
       } catch (err) {
-        console.error("Error saving stock:", err);
+        toast.error("Error saving stock:");
+        console.error(`Error saving stock '${stockInfo.symbol}':`, err);
       }
     }
   };
@@ -106,6 +131,7 @@ const StockBase: React.FC = () => {
       await deleteUserStock(userEmail, symbol);
       setSavedStocks((prev) => prev.filter((stock) => stock.symbol !== symbol));
     } catch (err) {
+      toast.error("Error deleting stock");
       console.error(`Error deleting stock '${symbol}':`, err);
     }
   };

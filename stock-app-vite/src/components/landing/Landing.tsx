@@ -1,12 +1,11 @@
 import React from "react";
-import { PublicClientApplication } from "@azure/msal-browser";
-import { MsalProvider, useMsal, useIsAuthenticated } from "@azure/msal-react";
+import { useMsal, useIsAuthenticated } from "@azure/msal-react";
 import { useNavigate } from "react-router-dom";
 import Welcome from "./Welcome";
-import { msalConfig } from "../../auth/MsalConfig";
+import { toast } from "react-toastify";
 
 const appName = import.meta.env.VITE_APP_NAME;
-const msalInstance = new PublicClientApplication(msalConfig);
+const apiScope = import.meta.env.VITE_API_SCOPE;
 
 const SignInButton: React.FC = () => {
   const { instance } = useMsal();
@@ -14,14 +13,19 @@ const SignInButton: React.FC = () => {
 
   const handleLogin = async () => {
     try {
-      await instance.loginPopup({
-        scopes: ["User.Read"],
+      const loginResponse = await instance.loginPopup({
+        scopes: [apiScope],
       });
 
+      // Step 2: Optionally store user/account info
+      const account = loginResponse.account;
+      if (account) {
+        instance.setActiveAccount(account);
+      }
       // After successful login, navigate to the stock base page
       navigate("/stockbase");
     } catch (e) {
-      console.error(e);
+      toast.error("Login failed.");
     }
   };
 
@@ -47,10 +51,6 @@ const LandingContent: React.FC = () => {
   );
 };
 
-const Landing: React.FC = () => (
-  <MsalProvider instance={msalInstance}>
-    <LandingContent />
-  </MsalProvider>
-);
+const Landing: React.FC = () => <LandingContent />;
 
 export default Landing;

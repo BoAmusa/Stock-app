@@ -4,16 +4,18 @@ import "./index.css";
 import App from "./App.tsx";
 import { BrowserRouter } from "react-router-dom";
 import { MsalProvider } from "@azure/msal-react";
-import { PublicClientApplication } from "@azure/msal-browser";
-import { msalConfig } from "./auth/MsalConfig.ts";
-
-const msalInstance = new PublicClientApplication(msalConfig);
+import { msalInstance } from "./auth/MsalConfig.ts";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <MsalProvider instance={msalInstance}>
       <BrowserRouter>
-        <App />
+        <>
+          <App />
+          <ToastContainer position="top-center" autoClose={3500} />
+        </>
       </BrowserRouter>
     </MsalProvider>
   </StrictMode>

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { getUserStocks } from "../api/StockService.async";
 import { extractStocksFromUserDocs } from "../util/styles/Helper";
 
-export const useFetchUserStocksOnce = () => {
+export const useFetchUserStocks = () => {
   const { accounts, inProgress } = useMsal(); // Get 'inProgress' to know if MSAL is busy
   const [savedStocks, setSavedStocks] = useState<StockCardInfo[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -43,12 +43,10 @@ export const useFetchUserStocksOnce = () => {
               extractStocksFromUserDocs(userStocks);
 
             setSavedStocks(extractedStocks);
-            console.log("User stocks fetched successfully:", userStocks);
           } else {
             setSavedStocks([]); // Ensure state is empty if no stocks found
-            console.log("No stocks found for the user.");
           }
-          hasFetchedOnce.current = true; // Mark as fetched for this session
+          //hasFetchedOnce.current = true; // Mark as fetched for this session
         } catch (err: any) {
           console.error("Error fetching user stocks:", err);
           setError(err);
