@@ -2,7 +2,7 @@ import { useMsal } from "@azure/msal-react";
 import type { StockCardInfo } from "../types/UserTypes.types";
 import * as React from "react";
 import { useState } from "react";
-import { getUserStocks } from "../api/StockService.async";
+import { getStockPrices, getUserStocks } from "../api/StockService.async";
 import { extractStocksFromUserDocs } from "../util/styles/Helper";
 
 export const useFetchUserStocks = () => {
@@ -41,8 +41,36 @@ export const useFetchUserStocks = () => {
           if (userStocks && userStocks.length > 0) {
             const extractedStocks: StockCardInfo[] =
               extractStocksFromUserDocs(userStocks);
+            const symbols = extractedStocks.map((s: any) => s.symbol);
+            if (symbols.length > 0) {
+              const latestPrices = await getStockPrices(symbols);
 
-            setSavedStocks(extractedStocks);
+              // Merge latest prices into the extracted stocks
+              const mergedStocks = extractedStocks.map((stock) => {
+                const latest = latestPrices.find(
+                  (p) => p.symbol === stock.symbol
+                );
+                return latest
+                  ? {
+                      ...stock,
+                      price: latest.price,
+                      change: latest.change,
+                      percentChange: latest.percentChange,
+                      currency: latest.currency,
+                      priceChangeColor:
+                        latest.change > 0
+                          ? "green"
+                          : latest.change < 0
+                          ? "red"
+                          : "gray",
+                    }
+                  : stock; // fallback to original
+              });
+
+              setSavedStocks(mergedStocks);
+            } else {
+              setSavedStocks(extractedStocks); // No symbols to update, show original
+            }
           } else {
             setSavedStocks([]); // Ensure state is empty if no stocks found
           }

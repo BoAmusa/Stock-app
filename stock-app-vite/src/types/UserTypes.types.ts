@@ -13,4 +13,6 @@ export type StockCardInfo = {
   currency: string;
   logo?: string;
   priceChangeColor?: string;
+  latestPrice?: number;
+  latestChange?: number;
 };

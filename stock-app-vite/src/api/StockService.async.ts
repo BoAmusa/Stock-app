@@ -2,21 +2,25 @@ import { getAccessToken } from "../auth/AuthUtil";
 import type { StockCardInfo } from "../types/UserTypes.types";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "/api";
-/**
- * Function to fetch the stock price of a given company.
- * @param company
- * @returns A promise that resolves to the stock price of the company.
+
+/***
+ * Function to fetch stock prices for a list of stock symbols.
+ * @param symbols - An array of stock symbols to fetch prices for.
+ * @returns A promise that resolves to an array of StockCardInfo objects.
  * @throws Error if the API call fails or if the response is not ok.
  */
-export const getStockPrice = async (company: string): Promise<number> => {
+export const getStockPrices = async (
+  symbols: string[]
+): Promise<StockCardInfo[]> => {
   const token = await getAccessToken();
 
   if (!token) {
     throw new Error("No access token available. User must be signed in.");
   }
 
+  const symbolParam = symbols.join(",");
   const response = await fetch(
-    `${API_BASE}/StockPrice?symbol=${encodeURIComponent(company)}`,
+    `${API_BASE}/StockPrices?symbols=${encodeURIComponent(symbolParam)}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -25,16 +29,19 @@ export const getStockPrice = async (company: string): Promise<number> => {
   );
 
   if (!response.ok) {
-    throw new Error("Failed to fetch stock price");
+    const errorBody = await response.text();
+    throw new Error(
+      `Failed to fetch stock prices: ${response.status} - ${errorBody}`
+    );
   }
 
   const data = await response.json();
 
-  if (!data.price) {
-    throw new Error("No price returned");
+  if (!Array.isArray(data)) {
+    throw new Error("Unexpected response format from price API");
   }
 
-  return parseFloat(data.price); // ensures numeric value
+  return data;
 };
 
 /***
