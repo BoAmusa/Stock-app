@@ -240,21 +240,35 @@ const StockBase: React.FC = () => {
             Failed to load saved stocks. Please try again later.
           </div>
         ) : savedStocks.length > 0 ? (
-          <div style={{ width: "100%", padding: "0 20px" }}>
+          <div
+            style={{
+              width: "100%",
+              padding: "0 20px",
+              boxSizing: "border-box",
+            }}
+          >
             <h2 style={{ textAlign: "center" }}>Saved Stocks</h2>
-            <p>Save up to 5 maximum</p>
+            <p style={{ textAlign: "center" }}>Save up to 5 maximum</p>
             <div
               style={{
                 display: "flex",
-                flexDirection: "row",
+                flexWrap: "wrap",
                 gap: "16px",
                 overflowX: "auto",
-                paddingBottom: "1px",
+                paddingBottom: "1rem",
+                justifyContent: "center",
               }}
               aria-label="Saved Stocks List"
             >
               {savedStocks.map((stock) => (
-                <div key={stock.symbol}>
+                <div
+                  key={stock.symbol}
+                  style={{
+                    flex: "0 0 auto", // prevents shrinking in horizontal scroll
+                    minWidth: "250px", // good base size for cards
+                    maxWidth: "300px",
+                  }}
+                >
                   <StockCard
                     stockCardInfo={stock}
                     handleRemoveStock={handleRemoveStock}
